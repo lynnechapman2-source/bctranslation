@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OncoWatch — Recent Oncology Literature</title>
+<title>OncoTranslate — updates from basic sciences to phase III</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -40,7 +40,7 @@
     border-bottom:1px solid var(--line);
   }
   .bar{max-width:var(--maxw);margin:0 auto;padding:18px 22px 16px}
-  .wordmark{display:flex;align-items:baseline;gap:10px}
+  .wordmark{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
   .wordmark .name{
     font-family:var(--sans);font-weight:700;letter-spacing:.14em;
     text-transform:uppercase;font-size:14px;color:var(--navy);
@@ -48,33 +48,34 @@
   .wordmark .tick{width:22px;height:3px;background:var(--gold);border-radius:2px;align-self:center}
   .wordmark .sub{font-family:var(--serif);font-style:italic;color:var(--ink-soft);font-size:14px}
 
-  .controls{margin-top:14px;display:flex;flex-direction:column;gap:10px}
-  .searchrow{display:flex;gap:8px}
+  .controls{margin-top:14px;display:flex;flex-direction:column;gap:12px}
+  .searchrow{display:flex;gap:6px;max-width:380px}
   .search{
-    flex:1;display:flex;align-items:center;gap:8px;
-    background:var(--surface);border:1px solid var(--line);border-radius:9px;
-    padding:0 12px;transition:border-color .15s,box-shadow .15s;
+    flex:1;display:flex;align-items:center;gap:7px;
+    background:transparent;border:1px solid var(--line);border-radius:8px;
+    padding:0 10px;transition:border-color .15s,background .15s;
   }
-  .search:focus-within{border-color:var(--navy);box-shadow:0 0 0 3px rgba(22,49,92,.08)}
+  .search:focus-within{border-color:var(--ink-faint);background:var(--surface)}
   .search svg{flex:none;color:var(--ink-faint)}
   .search input{
     flex:1;border:0;outline:0;background:transparent;
-    font-family:var(--sans);font-size:15px;color:var(--ink);padding:11px 0;
+    font-family:var(--sans);font-size:13px;color:var(--ink-soft);padding:8px 0;
   }
   .search input::placeholder{color:var(--ink-faint)}
   button.go{
-    border:0;background:var(--navy);color:#fff;font-family:var(--sans);
-    font-weight:600;font-size:14px;padding:0 18px;border-radius:9px;cursor:pointer;
-    transition:background .15s;
+    border:1px solid var(--line);background:transparent;color:var(--ink-soft);font-family:var(--sans);
+    font-weight:500;font-size:12.5px;padding:0 13px;border-radius:8px;cursor:pointer;
+    transition:border-color .15s,color .15s;
   }
-  button.go:hover{background:var(--navy-deep)}
+  button.go:hover{border-color:var(--navy);color:var(--navy)}
   button.go:disabled{opacity:.55;cursor:default}
 
-  .presets{display:flex;flex-wrap:wrap;gap:6px}
+  .presets{display:flex;flex-wrap:wrap;align-items:center;gap:7px}
+  .preset-sep{width:1px;align-self:stretch;min-height:20px;background:var(--line);margin:2px 4px}
   .chip{
-    font-family:var(--sans);font-size:12.5px;color:var(--ink-soft);
+    font-family:var(--sans);font-size:13px;font-weight:500;color:var(--ink-soft);
     background:var(--surface);border:1px solid var(--line);border-radius:20px;
-    padding:5px 12px;cursor:pointer;transition:all .12s;white-space:nowrap;
+    padding:7px 14px;cursor:pointer;transition:all .12s;white-space:nowrap;
   }
   .chip:hover{border-color:var(--navy);color:var(--navy)}
   .chip.active{background:var(--gold-soft);border-color:#e3d4a6;color:var(--gold)}
@@ -94,8 +95,12 @@
     padding:18px 2px 6px;color:var(--ink-faint);font-size:12.5px;border-bottom:1px solid var(--line-soft);
   }
   .meta-line .q{color:var(--ink-soft);font-family:var(--serif);font-style:italic}
+  .meta-line .q a{color:var(--navy);text-decoration:underline;text-underline-offset:2px;font-style:normal}
 
   article{padding:26px 2px;border-bottom:1px solid var(--line-soft)}
+  article.seen{opacity:.46;transition:opacity .18s}
+  article.seen:hover{opacity:1}
+  .eyebrow .seen-badge{background:var(--ink-faint);color:#fff;border-radius:4px;padding:1px 7px;font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
   .eyebrow{
     display:flex;flex-wrap:wrap;align-items:center;gap:8px;
     font-size:11.5px;letter-spacing:.04em;color:var(--ink-faint);text-transform:uppercase;font-weight:500;
@@ -150,28 +155,29 @@
 <header>
   <div class="bar">
     <div class="wordmark">
-      <span class="name">OncoWatch</span>
+      <span class="name">OncoTranslate</span>
       <span class="tick"></span>
-      <span class="sub">recently published in oncology</span>
+      <span class="sub">updates from basic sciences to phase III</span>
     </div>
 
     <div class="controls">
+      <div class="presets" id="presets"></div>
+
       <div class="searchrow">
         <div class="search">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-          <input id="q" type="text" placeholder="Search — e.g. extracellular vesicles AND breast cancer" autocomplete="off" spellcheck="false">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <input id="q" type="text" placeholder="or search any topic…" autocomplete="off" spellcheck="false">
         </div>
         <button class="go" id="goBtn">Search</button>
       </div>
 
-      <div class="presets" id="presets"></div>
-
       <div class="opts">
         <label>Window
           <select id="window">
-            <option value="7">last 7 days</option>
+            <option value="0">today</option>
+            <option value="7" selected>last 7 days</option>
             <option value="14">last 14 days</option>
-            <option value="30" selected>last 30 days</option>
+            <option value="30">last 30 days</option>
             <option value="60">last 60 days</option>
             <option value="90">last 90 days</option>
           </select>
@@ -182,7 +188,8 @@
             <option value="CREATION_DATE">added to index</option>
           </select>
         </label>
-        <label><input type="checkbox" id="hiqual"> High-impact journals only</label>
+        <label><input type="checkbox" id="hiqual" checked> High-impact journals only</label>
+        <label><input type="checkbox" id="hideseen"> Hide seen</label>
         <label>Show
           <select id="retmax">
             <option value="25">25</option>
@@ -203,7 +210,7 @@
 
 <footer>
   Data from <a href="https://europepmc.org/" target="_blank" rel="noopener">Europe PMC</a> (EMBL-EBI),
-  which indexes all PubMed/MEDLINE content. OncoWatch is a personal literature monitor —
+  which indexes all PubMed/MEDLINE content. OncoTranslate is a personal literature monitor —
   always confirm details against the original article.
 </footer>
 
@@ -212,34 +219,77 @@ const EPMC = "https://www.ebi.ac.uk/europepmc/webservices/rest/search";
 
 // Topic presets — these prefill the search box and are fully editable.
 const PRESETS = [
-  {label:"All oncology",    q:"(cancer OR oncology OR carcinoma OR neoplasm OR tumour)"},
-  {label:"Cancer biology",  q:'(cancer OR tumour) AND ("tumor microenvironment" OR oncogene OR "signal transduction" OR tumorigenesis OR "cancer cell")'},
-  {label:"Breast cancer",   q:"breast cancer"},
-  {label:"Extracellular vesicles", q:"extracellular vesicles AND cancer"},
-  {label:"Immunotherapy",   q:"cancer immunotherapy"},
-  {label:"Biomarkers",      q:"(tumour biomarkers OR tumor biomarkers)"},
-  {label:"Proteomics",      q:"cancer proteomics"},
+  {label:"All oncology",  q:"(cancer OR oncology OR carcinoma OR neoplasm OR tumour)"},
+  {label:"Basic science", q:'(cancer OR tumour OR tumor OR neoplasm) AND ("tumor microenvironment" OR oncogene OR tumorigenesis OR "signal transduction" OR "tumour suppressor" OR apoptosis OR "cancer metabolism" OR proteomics OR "extracellular vesicles" OR "gene expression" OR epigenetic*)'},
+  {label:"Phase I",       q:'(cancer OR carcinoma OR oncolog* OR tumour) AND ("phase 1" OR "phase I" OR "first-in-human")'},
+  {label:"Phase II",      q:'(cancer OR carcinoma OR oncolog* OR tumour) AND ("phase 2" OR "phase II")'},
+  {label:"Phase III",     q:'(cancer OR carcinoma OR oncolog* OR tumour) AND ("phase 3" OR "phase III")'},
+  {label:"FDA approvals", q:'(TITLE:"FDA approval" OR TITLE:"FDA approved" OR TITLE:"FDA approves" OR TITLE:"FDA grants" OR TITLE:"approval summary" OR TITLE:"accelerated approval") AND (cancer OR carcinoma OR oncolog* OR tumour OR tumor OR neoplasm OR leukaem* OR leukem* OR lymphoma OR melanoma OR sarcoma OR myeloma)'},
+  {label:"Breast cancer", q:"breast cancer"},
+  {label:"Immunotherapy", q:'(cancer OR tumour) AND (immunotherapy OR "immune checkpoint" OR "checkpoint inhibitor" OR "CAR-T" OR "CAR T cell")'},
+  {label:"Biomarkers",    q:"(cancer OR tumour OR tumor) AND biomarker*"},
 ];
 
-// Journal filter applied when "High-impact journals only" is checked.
-const HIQUAL_JOURNALS = [
-  "Nature","Science","Cell","Cancer Cell","Cancer Discovery","Nature Cancer",
-  "Nature Medicine","Nature Reviews Cancer","Journal of Clinical Oncology",
-  "Cancer Research","Clinical Cancer Research","Annals of Oncology",
-  "JAMA Oncology","Lancet Oncology","Cell Reports Medicine"
+// ---- "High-impact journals only" filter ----
+// Tier 1: cancer-dedicated journals. Any article qualifies.
+const ONCO_JOURNALS = [
+  ["Cancer Cell"], ["Cancer Discovery"], ["Nature Cancer"], ["Nature Reviews Cancer"],
+  ["Cancer Research"], ["Clinical Cancer Research"], ["Journal of Clinical Oncology"],
+  ["Annals of Oncology"], ["JAMA Oncology"], ["Lancet Oncology"],
+  ["Nature Reviews Clinical Oncology"], ["The Oncologist"],
+  ["Journal of the National Cancer Institute", "J Natl Cancer Inst"]
 ];
+// Tier 2: broad high-impact journals. Only their CANCER-relevant articles appear.
+// Each entry lists title variants OR-ed together (covers naming/abbreviation quirks).
+const BROAD_JOURNALS = [
+  ["Nature"], ["Science"], ["Cell"], ["Nature Medicine"], ["Cell Reports Medicine"],
+  ["Nature Metabolism"], ["Nature Immunology"],
+  ["Nature Reviews Immunology", "Nature reviews. Immunology"],
+  ["Nature Biotechnology"],
+  ["New England Journal of Medicine", "N Engl J Med"]
+];
+// Cancer net used to constrain the broad journals (trailing wildcards).
+const CANCER_TERMS = '(cancer* OR oncolog* OR carcinom* OR neoplas* OR tumour* OR tumor* OR '
+  + 'malignan* OR metasta* OR leukaem* OR leukem* OR lymphom* OR sarcom* OR melanom* OR gliom*)';
+
+function journalOr(list){
+  return list.map(variants => variants.map(n=>`JOURNAL:"${n}"`).join(" OR ")).join(" OR ");
+}
+function journalClause(){
+  const onco  = journalOr(ONCO_JOURNALS);
+  const broad = journalOr(BROAD_JOURNALS);
+  return `( (${onco}) OR ( (${broad}) AND ${CANCER_TERMS} ) )`;
+}
 
 const $ = s => document.querySelector(s);
 const main = $("#main"), qInput = $("#q"), goBtn = $("#goBtn");
 let activeChip = null;
 
+// ---- "already seen" tracking (persists per-browser via localStorage) ----
+const SEEN_KEY = "oncotranslate_seen_v1";
+let seen = new Set();
+function loadSeen(){
+  try{ const raw = localStorage.getItem(SEEN_KEY); if(raw) seen = new Set(JSON.parse(raw)); }
+  catch(e){ /* storage blocked (e.g. preview pane) — fall back to in-memory only */ }
+}
+function saveSeen(){
+  try{ localStorage.setItem(SEEN_KEY, JSON.stringify([...seen])); }catch(e){}
+}
+loadSeen();
+
 // build preset chips
 const presetWrap = $("#presets");
-PRESETS.forEach(p=>{
+let defaultChip = null;
+const DIVIDER_AFTER = new Set([1, 5]); // after Basic science, after FDA approvals
+PRESETS.forEach((p,i)=>{
   const c = document.createElement("button");
   c.className = "chip"; c.textContent = p.label;
   c.onclick = ()=>{ qInput.value = p.q; setActive(c); run(); };
   presetWrap.appendChild(c);
+  if(p.label === "All oncology") defaultChip = c;
+  if(DIVIDER_AFTER.has(i)){
+    const s = document.createElement("span"); s.className = "preset-sep"; presetWrap.appendChild(s);
+  }
 });
 function setActive(chip){
   if(activeChip) activeChip.classList.remove("active");
@@ -249,6 +299,7 @@ function setActive(chip){
 goBtn.onclick = ()=>{ setActive(null); run(); };
 qInput.addEventListener("keydown", e=>{ if(e.key==="Enter"){ setActive(null); run(); }});
 ["#window","#datetype","#hiqual","#retmax"].forEach(id=>$(id).addEventListener("change", ()=>{ if(qInput.value.trim()) run(); }));
+$("#hideseen").addEventListener("change", ()=> render(lastArticles, lastTotal));
 
 function fmtDate(d){ return d.toISOString().slice(0,10); }
 
@@ -256,8 +307,7 @@ function buildQuery(){
   let q = qInput.value.trim();
   if(!q) return "";
   if($("#hiqual").checked){
-    const j = HIQUAL_JOURNALS.map(n=>`JOURNAL:"${n}"`).join(" OR ");
-    q = `(${q}) AND (${j})`;
+    q = `(${q}) AND ${journalClause()}`;
   }
   const days = +$("#window").value;
   const field = $("#datetype").value;            // FIRST_PDATE | CREATION_DATE
@@ -363,24 +413,65 @@ function parseArticle(r){
     if(oa) fullText = oa.url;
   }
 
-  return {source,id,pmid,title,journal,displayDate,sortKey,authorStr,sections,ptype,isPreprint,pubmedUrl,epmcUrl,doi,fullText};
+  const key = (source && id) ? `${source}:${id}` : (pmid || doi || title);
+
+  return {key,source,id,pmid,title,journal,displayDate,sortKey,authorStr,sections,ptype,isPreprint,pubmedUrl,epmcUrl,doi,fullText};
 }
 
 // ---------- rendering ----------
 function el(tag,cls,txt){ const e=document.createElement(tag); if(cls)e.className=cls; if(txt!=null)e.textContent=txt; return e; }
 
+let lastArticles = [], lastTotal = 0;
+
 function render(articles, total){
+  lastArticles = articles; lastTotal = total;
   main.innerHTML = "";
+
+  const hideSeen = $("#hideseen").checked;
+  const shown = hideSeen ? articles.filter(a=>!seen.has(a.key)) : articles;
+
   const ml = el("div","meta-line");
-  ml.innerHTML = `<span>Showing <strong>${articles.length}</strong> of ${(+total).toLocaleString()} matches</span><span class="q">newest first</span>`;
+  const left = el("span");
+  left.innerHTML = `Showing <strong>${shown.length}</strong> of ${(+total).toLocaleString()} matches`;
+  ml.appendChild(left);
+  ml.appendChild(el("span","q"));
   main.appendChild(ml);
-  articles.forEach(a=>main.appendChild(card(a)));
+  updateSeenCount();
+
+  if(shown.length === 0){
+    main.appendChild(Object.assign(el("div","state"),{innerHTML:'<div class="big">Nothing new here</div><div>Every match in this view is already marked seen. Untick “Hide seen” to show them again.</div>'}));
+    return;
+  }
+  shown.forEach(a=>main.appendChild(card(a)));
+}
+
+function updateSeenCount(){
+  const right = main.querySelector(".meta-line .q");
+  if(!right) return;
+  const n = seen.size;
+  right.innerHTML = "latest first" + (n ? ` · <a href="#" id="clearseen">clear ${n} seen</a>` : "");
+  const cs = $("#clearseen");
+  if(cs) cs.onclick = e=>{ e.preventDefault(); seen.clear(); saveSeen(); render(lastArticles, lastTotal); };
+}
+
+function markSeen(key, art){
+  if(!key) return;
+  if(!seen.has(key)){ seen.add(key); saveSeen(); }
+  if(art && !art.classList.contains("seen")){
+    art.classList.add("seen");
+    const eb = art.querySelector(".eyebrow");
+    if(eb && !eb.querySelector(".seen-badge")) eb.insertBefore(el("span","seen-badge","seen"), eb.firstChild);
+  }
+  updateSeenCount();
 }
 
 function card(a){
   const art = el("article");
+  const isSeen = seen.has(a.key);
+  if(isSeen) art.classList.add("seen");
 
   const eb = el("div","eyebrow");
+  if(isSeen) eb.appendChild(el("span","seen-badge","seen"));
   if(a.journal){ eb.appendChild(el("span","journal",a.journal)); }
   if(a.displayDate){ eb.appendChild(el("span","dot","·")); eb.appendChild(el("span",null,a.displayDate)); }
   if(a.isPreprint){ eb.appendChild(el("span","dot","·")); eb.appendChild(el("span","src","preprint")); }
@@ -391,6 +482,7 @@ function card(a){
   const link = el("a",null,a.title);
   link.href = a.pubmedUrl || a.epmcUrl || (a.doi?`https://doi.org/${a.doi}`:"#");
   link.target="_blank"; link.rel="noopener";
+  link.addEventListener("click", ()=>markSeen(a.key, art));
   h.appendChild(link); art.appendChild(h);
 
   if(a.authorStr) art.appendChild(el("div","authors",a.authorStr));
@@ -409,10 +501,11 @@ function card(a){
   art.appendChild(ab);
 
   const lk = el("div","links");
-  if(a.pubmedUrl){ const x=el("a",null,"PubMed"); x.href=a.pubmedUrl; x.target="_blank"; x.rel="noopener"; lk.appendChild(x); }
-  if(a.epmcUrl){ const x=el("a",null,"Europe PMC"); x.href=a.epmcUrl; x.target="_blank"; x.rel="noopener"; lk.appendChild(x); }
-  if(a.fullText){ const x=el("a",null,"Full text"); x.href=a.fullText; x.target="_blank"; x.rel="noopener"; lk.appendChild(x); }
-  else if(a.doi){ const x=el("a",null,"DOI"); x.href=`https://doi.org/${a.doi}`; x.target="_blank"; x.rel="noopener"; lk.appendChild(x); }
+  const onLink = x => x.addEventListener("click", ()=>markSeen(a.key, art));
+  if(a.pubmedUrl){ const x=el("a",null,"PubMed"); x.href=a.pubmedUrl; x.target="_blank"; x.rel="noopener"; onLink(x); lk.appendChild(x); }
+  if(a.epmcUrl){ const x=el("a",null,"Europe PMC"); x.href=a.epmcUrl; x.target="_blank"; x.rel="noopener"; onLink(x); lk.appendChild(x); }
+  if(a.fullText){ const x=el("a",null,"Full text"); x.href=a.fullText; x.target="_blank"; x.rel="noopener"; onLink(x); lk.appendChild(x); }
+  else if(a.doi){ const x=el("a",null,"DOI"); x.href=`https://doi.org/${a.doi}`; x.target="_blank"; x.rel="noopener"; onLink(x); lk.appendChild(x); }
 
   const cp = el("button",null,"Copy citation");
   cp.onclick = ()=>{
@@ -420,6 +513,16 @@ function card(a){
     navigator.clipboard.writeText(cite).then(()=>{ cp.textContent="Copied"; cp.classList.add("copied"); setTimeout(()=>{cp.textContent="Copy citation";cp.classList.remove("copied");},1400); });
   };
   lk.appendChild(cp);
+
+  // toggle seen/unseen by hand
+  const mk = el("button",null, isSeen ? "Mark unseen" : "Mark seen");
+  mk.onclick = ()=>{
+    if(seen.has(a.key)){ seen.delete(a.key); saveSeen(); art.classList.remove("seen");
+      const b=art.querySelector(".seen-badge"); if(b) b.remove(); mk.textContent="Mark seen"; updateSeenCount(); }
+    else { markSeen(a.key, art); mk.textContent="Mark unseen"; }
+  };
+  lk.appendChild(mk);
+
   art.appendChild(lk);
   return art;
 }
@@ -440,6 +543,11 @@ function renderEmpty(){
 function renderError(msg){
   main.innerHTML=`<div class="state err"><div class="big">Couldn't load results</div><div>${msg||"Network error"}.<br>If you're viewing this inside a preview pane, try the downloaded file in a normal browser tab — some embedded previews block outside requests.</div></div>`;
 }
+
+// Default homepage view: All oncology · last 7 days · high-impact only · newest first
+qInput.value = PRESETS[0].q;
+setActive(defaultChip);
+run();
 </script>
 </body>
 </html>
