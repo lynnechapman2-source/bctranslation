@@ -41,6 +41,18 @@
   }
   .bar{max-width:var(--maxw);margin:0 auto;padding:18px 22px 16px}
   .wordmark{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .topline{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+  .topline .wordmark{flex:1}
+  .filter-toggle{
+    flex:none;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;
+    border:1px solid var(--line);background:transparent;color:var(--ink-soft);
+    font-family:var(--sans);font-size:12.5px;font-weight:500;padding:6px 11px;border-radius:8px;cursor:pointer;
+    transition:border-color .15s,color .15s;margin-top:2px;
+  }
+  .filter-toggle:hover{border-color:var(--navy);color:var(--navy)}
+  .filter-toggle .chev{transition:transform .18s}
+  .filter-toggle[aria-expanded="true"] .chev{transform:rotate(180deg)}
+  .controls.collapsed{display:none}
   .wordmark .name{
     font-family:var(--sans);font-weight:700;letter-spacing:.14em;
     text-transform:uppercase;font-size:14px;color:var(--navy);
@@ -154,13 +166,19 @@
 <body>
 <header>
   <div class="bar">
-    <div class="wordmark">
-      <span class="name">OncoTranslate</span>
-      <span class="tick"></span>
-      <span class="sub">updates from basic sciences to phase III trials</span>
+    <div class="topline">
+      <div class="wordmark">
+        <span class="name">OncoTranslate</span>
+        <span class="tick"></span>
+        <span class="sub">updates from basic sciences to phase III trials</span>
+      </div>
+      <button class="filter-toggle" id="filterToggle" aria-expanded="true" aria-controls="controls">
+        <span id="filterLabel">Filters</span>
+        <svg class="chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
     </div>
 
-    <div class="controls">
+    <div class="controls" id="controls">
       <div class="presets" id="presets"></div>
 
       <div class="searchrow">
@@ -284,7 +302,7 @@ const DIVIDER_AFTER = new Set([1, 5]); // after Basic science, after FDA approva
 PRESETS.forEach((p,i)=>{
   const c = document.createElement("button");
   c.className = "chip"; c.textContent = p.label;
-  c.onclick = ()=>{ qInput.value = p.q; setActive(c); run(); };
+  c.onclick = ()=>{ qInput.value = p.q; setActive(c); run(); collapseOnMobile(); };
   presetWrap.appendChild(c);
   if(p.label === "All oncology") defaultChip = c;
   if(DIVIDER_AFTER.has(i)){
@@ -296,8 +314,26 @@ function setActive(chip){
   activeChip = chip; if(chip) chip.classList.add("active");
 }
 
-goBtn.onclick = ()=>{ setActive(null); run(); };
-qInput.addEventListener("keydown", e=>{ if(e.key==="Enter"){ setActive(null); run(); }});
+// ---- collapsible filter panel (saves space, esp. on mobile) ----
+const controlsEl = $("#controls"), filterToggle = $("#filterToggle"), filterLabel = $("#filterLabel");
+const isMobile = () => window.matchMedia("(max-width:560px)").matches;
+function windowShort(){ const v=$("#window").value; return v==="0" ? "today" : v+"d"; }
+function activeViewName(){ return activeChip ? activeChip.textContent : (qInput.value.trim() ? "Search" : "All oncology"); }
+function updateFilterLabel(){
+  filterLabel.textContent = controlsEl.classList.contains("collapsed")
+    ? `${activeViewName()} · ${windowShort()}` : "Filters";
+}
+function setControls(collapsed){
+  controlsEl.classList.toggle("collapsed", collapsed);
+  filterToggle.setAttribute("aria-expanded", String(!collapsed));
+  updateFilterLabel();
+}
+filterToggle.onclick = ()=> setControls(!controlsEl.classList.contains("collapsed"));
+// after picking a tab or searching on a phone, fold the panel so results fill the screen
+function collapseOnMobile(){ if(isMobile()) setControls(true); }
+
+goBtn.onclick = ()=>{ setActive(null); run(); collapseOnMobile(); };
+qInput.addEventListener("keydown", e=>{ if(e.key==="Enter"){ setActive(null); run(); collapseOnMobile(); }});
 ["#window","#datetype","#hiqual","#retmax"].forEach(id=>$(id).addEventListener("change", ()=>{ if(qInput.value.trim()) run(); }));
 $("#hideseen").addEventListener("change", ()=> render(lastArticles, lastTotal));
 
@@ -544,10 +580,13 @@ function renderError(msg){
   main.innerHTML=`<div class="state err"><div class="big">Couldn't load results</div><div>${msg||"Network error"}.<br>If you're viewing this inside a preview pane, try the downloaded file in a normal browser tab — some embedded previews block outside requests.</div></div>`;
 }
 
-// Default homepage view: All oncology · last 7 days · high-impact only · newest first
+// Default homepage view: All oncology · last 7 days · high-impact only · latest first
 qInput.value = PRESETS[0].q;
 setActive(defaultChip);
 run();
+
+// Start with the filter panel folded on phones to save vertical space
+if(isMobile()) setControls(true); else updateFilterLabel();
 </script>
 </body>
 </html>
