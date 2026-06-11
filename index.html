@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OncoWatch — Recent Oncology Literature</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#fbfbf9;
+    --surface:#ffffff;
+    --ink:#172033;
+    --ink-soft:#5a6578;
+    --ink-faint:#8a93a3;
+    --line:#e8e8ea;
+    --line-soft:#f0f0f1;
+    --navy:#16315c;
+    --navy-deep:#0f2444;
+    --gold:#9a7423;
+    --gold-soft:#f4eddb;
+    --serif:"Newsreader",Georgia,"Times New Roman",serif;
+    --sans:"Inter",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    --maxw:760px;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);
+    font-family:var(--sans);font-size:15px;line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit}
+
+  /* ---------- header ---------- */
+  header{
+    position:sticky;top:0;z-index:20;
+    background:rgba(251,251,249,.92);backdrop-filter:saturate(180%) blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  .bar{max-width:var(--maxw);margin:0 auto;padding:18px 22px 16px}
+  .wordmark{display:flex;align-items:baseline;gap:10px}
+  .wordmark .name{
+    font-family:var(--sans);font-weight:700;letter-spacing:.14em;
+    text-transform:uppercase;font-size:14px;color:var(--navy);
+  }
+  .wordmark .tick{width:22px;height:3px;background:var(--gold);border-radius:2px;align-self:center}
+  .wordmark .sub{font-family:var(--serif);font-style:italic;color:var(--ink-soft);font-size:14px}
+
+  .controls{margin-top:14px;display:flex;flex-direction:column;gap:10px}
+  .searchrow{display:flex;gap:8px}
+  .search{
+    flex:1;display:flex;align-items:center;gap:8px;
+    background:var(--surface);border:1px solid var(--line);border-radius:9px;
+    padding:0 12px;transition:border-color .15s,box-shadow .15s;
+  }
+  .search:focus-within{border-color:var(--navy);box-shadow:0 0 0 3px rgba(22,49,92,.08)}
+  .search svg{flex:none;color:var(--ink-faint)}
+  .search input{
+    flex:1;border:0;outline:0;background:transparent;
+    font-family:var(--sans);font-size:15px;color:var(--ink);padding:11px 0;
+  }
+  .search input::placeholder{color:var(--ink-faint)}
+  button.go{
+    border:0;background:var(--navy);color:#fff;font-family:var(--sans);
+    font-weight:600;font-size:14px;padding:0 18px;border-radius:9px;cursor:pointer;
+    transition:background .15s;
+  }
+  button.go:hover{background:var(--navy-deep)}
+  button.go:disabled{opacity:.55;cursor:default}
+
+  .presets{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{
+    font-family:var(--sans);font-size:12.5px;color:var(--ink-soft);
+    background:var(--surface);border:1px solid var(--line);border-radius:20px;
+    padding:5px 12px;cursor:pointer;transition:all .12s;white-space:nowrap;
+  }
+  .chip:hover{border-color:var(--navy);color:var(--navy)}
+  .chip.active{background:var(--gold-soft);border-color:#e3d4a6;color:var(--gold)}
+
+  .opts{display:flex;flex-wrap:wrap;align-items:center;gap:14px;font-size:12.5px;color:var(--ink-soft)}
+  .opts label{display:flex;align-items:center;gap:6px;cursor:pointer}
+  .opts select{
+    font-family:var(--sans);font-size:12.5px;color:var(--ink);
+    border:1px solid var(--line);border-radius:7px;padding:5px 8px;background:var(--surface);cursor:pointer;
+  }
+  .opts input[type=checkbox]{accent-color:var(--navy);width:15px;height:15px;cursor:pointer}
+
+  /* ---------- main ---------- */
+  main{max-width:var(--maxw);margin:0 auto;padding:8px 22px 80px}
+  .meta-line{
+    display:flex;justify-content:space-between;align-items:baseline;gap:12px;
+    padding:18px 2px 6px;color:var(--ink-faint);font-size:12.5px;border-bottom:1px solid var(--line-soft);
+  }
+  .meta-line .q{color:var(--ink-soft);font-family:var(--serif);font-style:italic}
+
+  article{padding:26px 2px;border-bottom:1px solid var(--line-soft)}
+  .eyebrow{
+    display:flex;flex-wrap:wrap;align-items:center;gap:8px;
+    font-size:11.5px;letter-spacing:.04em;color:var(--ink-faint);text-transform:uppercase;font-weight:500;
+  }
+  .eyebrow .journal{color:var(--gold);font-weight:600}
+  .eyebrow .dot{color:var(--line)}
+  .eyebrow .ptype{color:var(--ink-faint);text-transform:none;letter-spacing:0;font-style:normal}
+  .eyebrow .src{color:var(--ink-faint);text-transform:none;letter-spacing:0;font-style:italic}
+  h2.title{
+    font-family:var(--serif);font-weight:600;font-size:23px;line-height:1.28;
+    margin:9px 0 8px;letter-spacing:-.005em;
+  }
+  h2.title a{text-decoration:none;color:var(--ink);transition:color .12s}
+  h2.title a:hover{color:var(--navy);text-decoration:underline;text-decoration-color:var(--gold);text-underline-offset:3px}
+  .authors{font-family:var(--sans);font-size:13px;color:var(--ink-soft);margin-bottom:12px}
+  .abstract{font-family:var(--serif);font-size:16.5px;line-height:1.6;color:#2b3344}
+  .abstract p{margin:0 0 9px}
+  .abstract .lbl{font-family:var(--sans);font-weight:600;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--navy);margin-right:4px}
+  .no-abstract{font-style:italic;color:var(--ink-faint)}
+  .links{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+  .links a,.links button{
+    font-family:var(--sans);font-size:12.5px;font-weight:500;text-decoration:none;
+    color:var(--navy);border:1px solid var(--line);background:var(--surface);
+    padding:6px 12px;border-radius:7px;cursor:pointer;transition:all .12s;display:inline-flex;align-items:center;gap:5px;
+  }
+  .links a:hover,.links button:hover{border-color:var(--navy);background:#f6f8fb}
+  .links .copied{color:var(--gold);border-color:#e3d4a6}
+
+  .state{text-align:center;padding:70px 20px;color:var(--ink-soft)}
+  .state .big{font-family:var(--serif);font-size:21px;color:var(--ink);margin-bottom:8px}
+  .state.err .big{color:#9a3324}
+  .skel{padding:26px 2px;border-bottom:1px solid var(--line-soft)}
+  .skel .l{height:11px;background:linear-gradient(90deg,#eef0f2,#f6f7f8,#eef0f2);background-size:200% 100%;border-radius:5px;margin-bottom:10px;animation:sh 1.3s infinite}
+  @keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
+  .spinner{width:18px;height:18px;border:2px solid var(--line);border-top-color:var(--navy);border-radius:50%;display:inline-block;animation:spin .7s linear infinite;vertical-align:-3px;margin-right:8px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  footer{max-width:var(--maxw);margin:0 auto;padding:0 22px 50px;color:var(--ink-faint);font-size:12px;text-align:center;line-height:1.6}
+  footer a{color:var(--ink-soft)}
+
+  @media (max-width:560px){
+    .bar{padding:14px 16px 14px}
+    main{padding:4px 16px 60px}
+    h2.title{font-size:20px}
+    .abstract{font-size:15.5px}
+    button.go{padding:0 14px}
+  }
+  @media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <div class="bar">
+    <div class="wordmark">
+      <span class="name">OncoWatch</span>
+      <span class="tick"></span>
+      <span class="sub">recently published in oncology</span>
+    </div>
+
+    <div class="controls">
+      <div class="searchrow">
+        <div class="search">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <input id="q" type="text" placeholder="Search — e.g. extracellular vesicles AND breast cancer" autocomplete="off" spellcheck="false">
+        </div>
+        <button class="go" id="goBtn">Search</button>
+      </div>
+
+      <div class="presets" id="presets"></div>
+
+      <div class="opts">
+        <label>Window
+          <select id="window">
+            <option value="7">last 7 days</option>
+            <option value="14">last 14 days</option>
+            <option value="30" selected>last 30 days</option>
+            <option value="60">last 60 days</option>
+            <option value="90">last 90 days</option>
+          </select>
+        </label>
+        <label>Date
+          <select id="datetype">
+            <option value="FIRST_PDATE" selected>first published</option>
+            <option value="CREATION_DATE">added to index</option>
+          </select>
+        </label>
+        <label><input type="checkbox" id="hiqual"> High-impact journals only</label>
+        <label>Show
+          <select id="retmax">
+            <option value="25">25</option>
+            <option value="40" selected>40</option>
+            <option value="60">60</option>
+            <option value="100">100</option>
+          </select>
+        </label>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <div class="state"><div class="big">Pick a topic or search to begin</div>
+  <div>Newest articles from the biomedical literature, with abstracts and direct links.</div></div>
+</main>
+
+<footer>
+  Data from <a href="https://europepmc.org/" target="_blank" rel="noopener">Europe PMC</a> (EMBL-EBI),
+  which indexes all PubMed/MEDLINE content. OncoWatch is a personal literature monitor —
+  always confirm details against the original article.
+</footer>
+
+<script>
+const EPMC = "https://www.ebi.ac.uk/europepmc/webservices/rest/search";
+
+// Topic presets — these prefill the search box and are fully editable.
+const PRESETS = [
+  {label:"All oncology",    q:"(cancer OR oncology OR carcinoma OR neoplasm OR tumour)"},
+  {label:"Cancer biology",  q:'(cancer OR tumour) AND ("tumor microenvironment" OR oncogene OR "signal transduction" OR tumorigenesis OR "cancer cell")'},
+  {label:"Breast cancer",   q:"breast cancer"},
+  {label:"Extracellular vesicles", q:"extracellular vesicles AND cancer"},
+  {label:"Immunotherapy",   q:"cancer immunotherapy"},
+  {label:"Biomarkers",      q:"(tumour biomarkers OR tumor biomarkers)"},
+  {label:"Proteomics",      q:"cancer proteomics"},
+];
+
+// Journal filter applied when "High-impact journals only" is checked.
+const HIQUAL_JOURNALS = [
+  "Nature","Science","Cell","Cancer Cell","Cancer Discovery","Nature Cancer",
+  "Nature Medicine","Nature Reviews Cancer","Journal of Clinical Oncology",
+  "Cancer Research","Clinical Cancer Research","Annals of Oncology",
+  "JAMA Oncology","Lancet Oncology","Cell Reports Medicine"
+];
+
+const $ = s => document.querySelector(s);
+const main = $("#main"), qInput = $("#q"), goBtn = $("#goBtn");
+let activeChip = null;
+
+// build preset chips
+const presetWrap = $("#presets");
+PRESETS.forEach(p=>{
+  const c = document.createElement("button");
+  c.className = "chip"; c.textContent = p.label;
+  c.onclick = ()=>{ qInput.value = p.q; setActive(c); run(); };
+  presetWrap.appendChild(c);
+});
+function setActive(chip){
+  if(activeChip) activeChip.classList.remove("active");
+  activeChip = chip; if(chip) chip.classList.add("active");
+}
+
+goBtn.onclick = ()=>{ setActive(null); run(); };
+qInput.addEventListener("keydown", e=>{ if(e.key==="Enter"){ setActive(null); run(); }});
+["#window","#datetype","#hiqual","#retmax"].forEach(id=>$(id).addEventListener("change", ()=>{ if(qInput.value.trim()) run(); }));
+
+function fmtDate(d){ return d.toISOString().slice(0,10); }
+
+function buildQuery(){
+  let q = qInput.value.trim();
+  if(!q) return "";
+  if($("#hiqual").checked){
+    const j = HIQUAL_JOURNALS.map(n=>`JOURNAL:"${n}"`).join(" OR ");
+    q = `(${q}) AND (${j})`;
+  }
+  const days = +$("#window").value;
+  const field = $("#datetype").value;            // FIRST_PDATE | CREATION_DATE
+  const end = new Date();
+  const start = new Date(Date.now() - days*86400000);
+  q = `(${q}) AND ${field}:[${fmtDate(start)} TO ${fmtDate(end)}]`;
+  q += " sort_date:y";                            // newest first
+  return q;
+}
+
+async function run(){
+  const query = buildQuery();
+  if(!query) return;
+  const pageSize = $("#retmax").value;
+
+  goBtn.disabled = true; goBtn.textContent = "…";
+  renderSkeletons();
+
+  try{
+    const url = `${EPMC}?query=${encodeURIComponent(query)}&format=json&resultType=core&pageSize=${pageSize}`;
+    const res = await fetch(url);
+    if(!res.ok) throw new Error("Europe PMC returned status "+res.status);
+    const data = await res.json();
+    const results = (data.resultList && data.resultList.result) || [];
+    const total = data.hitCount != null ? data.hitCount : results.length;
+    if(results.length === 0){ renderEmpty(); return; }
+    const articles = results.map(parseArticle);
+    articles.sort((a,b)=> (b.sortKey||"").localeCompare(a.sortKey||"")); // ensure newest-first
+    render(articles, total);
+  }catch(err){
+    renderError(err.message);
+  }finally{
+    goBtn.disabled = false; goBtn.textContent = "Search";
+  }
+}
+
+// strip any inline markup safely -> plain text
+function plain(s){
+  if(!s) return "";
+  if(!/[<>&]/.test(s)) return s.trim();
+  const d = new DOMParser().parseFromString("<div>"+s+"</div>","text/html");
+  return d.body.textContent.trim();
+}
+
+// split a (possibly HTML-structured) abstract into labelled sections
+function parseAbstract(raw){
+  if(!raw) return [];
+  if(!/[<>]/.test(raw)) return [{label:"", text:raw.trim()}];
+  const doc = new DOMParser().parseFromString("<div>"+raw+"</div>","text/html");
+  const root = doc.body.firstChild;
+  const out = []; let curLabel = "";
+  root.childNodes.forEach(n=>{
+    if(n.nodeType===1){
+      const tag = n.tagName.toLowerCase();
+      if(/^h[1-6]$/.test(tag)){ curLabel = n.textContent.trim().replace(/:$/,""); }
+      else { const t=n.textContent.trim(); if(t){ out.push({label:curLabel,text:t}); curLabel=""; } }
+    } else if(n.nodeType===3){
+      const t=n.textContent.trim(); if(t){ out.push({label:curLabel,text:t}); curLabel=""; }
+    }
+  });
+  if(out.length===0){ const t=root.textContent.trim(); if(t) out.push({label:"",text:t}); }
+  return out;
+}
+
+function parseArticle(r){
+  const source = r.source || "MED";
+  const id = r.id || r.pmid || "";
+  const pmid = r.pmid || "";
+  const title = (plain(r.title) || "Untitled").replace(/\.$/,"");
+  const ji = r.journalInfo || {};
+  const journal = (ji.journal && (ji.journal.title || ji.journal.medlineAbbreviation || ji.journal.ISOAbbreviation)) || "";
+  const displayDate = r.firstPublicationDate || ji.dateOfPublication || (r.pubYear||"");
+  const sortKey = r.firstPublicationDate || (r.pubYear||"");
+
+  // authors (authorString is pre-formatted; cap length)
+  let authorStr = r.authorString || "";
+  if(authorStr){
+    const names = authorStr.replace(/\.$/,"").split(/,\s*/);
+    if(names.length > 5) authorStr = names.slice(0,4).join(", ") + ", et al.";
+  }
+
+  const sections = parseAbstract(r.abstractText);
+
+  // publication type — skip generic labels
+  let ptype = "";
+  if(r.pubTypeList && r.pubTypeList.pubType){
+    const arr = Array.isArray(r.pubTypeList.pubType) ? r.pubTypeList.pubType : [r.pubTypeList.pubType];
+    ptype = arr.find(t=>!/journal article|research-article|research support/i.test(t)) || "";
+  }
+  const isPreprint = source === "PPR";
+
+  // links
+  const pubmedUrl = pmid ? `https://pubmed.ncbi.nlm.nih.gov/${pmid}/` : "";
+  const epmcUrl = id ? `https://europepmc.org/article/${source}/${id}` : "";
+  const doi = r.doi || "";
+
+  // open-access / free full text
+  let fullText = "";
+  if(r.fullTextUrlList && r.fullTextUrlList.fullTextUrl){
+    const urls = r.fullTextUrlList.fullTextUrl;
+    const oa = urls.find(u=>/open access/i.test(u.availability||"")) ||
+               urls.find(u=>/free/i.test(u.availability||"")) || urls[0];
+    if(oa) fullText = oa.url;
+  }
+
+  return {source,id,pmid,title,journal,displayDate,sortKey,authorStr,sections,ptype,isPreprint,pubmedUrl,epmcUrl,doi,fullText};
+}
+
+// ---------- rendering ----------
+function el(tag,cls,txt){ const e=document.createElement(tag); if(cls)e.className=cls; if(txt!=null)e.textContent=txt; return e; }
+
+function render(articles, total){
+  main.innerHTML = "";
+  const ml = el("div","meta-line");
+  ml.innerHTML = `<span>Showing <strong>${articles.length}</strong> of ${(+total).toLocaleString()} matches</span><span class="q">newest first</span>`;
+  main.appendChild(ml);
+  articles.forEach(a=>main.appendChild(card(a)));
+}
+
+function card(a){
+  const art = el("article");
+
+  const eb = el("div","eyebrow");
+  if(a.journal){ eb.appendChild(el("span","journal",a.journal)); }
+  if(a.displayDate){ eb.appendChild(el("span","dot","·")); eb.appendChild(el("span",null,a.displayDate)); }
+  if(a.isPreprint){ eb.appendChild(el("span","dot","·")); eb.appendChild(el("span","src","preprint")); }
+  if(a.ptype){ eb.appendChild(el("span","dot","·")); eb.appendChild(el("span","ptype",a.ptype)); }
+  art.appendChild(eb);
+
+  const h = el("h2","title");
+  const link = el("a",null,a.title);
+  link.href = a.pubmedUrl || a.epmcUrl || (a.doi?`https://doi.org/${a.doi}`:"#");
+  link.target="_blank"; link.rel="noopener";
+  h.appendChild(link); art.appendChild(h);
+
+  if(a.authorStr) art.appendChild(el("div","authors",a.authorStr));
+
+  const ab = el("div","abstract");
+  if(a.sections.length){
+    a.sections.forEach(s=>{
+      const p = el("p");
+      if(s.label){ p.appendChild(el("span","lbl",s.label+":")); p.appendChild(document.createTextNode(" "+s.text)); }
+      else p.textContent = s.text;
+      ab.appendChild(p);
+    });
+  }else{
+    ab.appendChild(el("p","no-abstract","No abstract available for this record."));
+  }
+  art.appendChild(ab);
+
+  const lk = el("div","links");
+  if(a.pubmedUrl){ const x=el("a",null,"PubMed"); x.href=a.pubmedUrl; x.target="_blank"; x.rel="noopener"; lk.appendChild(x); }
+  if(a.epmcUrl){ const x=el("a",null,"Europe PMC"); x.href=a.epmcUrl; x.target="_blank"; x.rel="noopener"; lk.appendChild(x); }
+  if(a.fullText){ const x=el("a",null,"Full text"); x.href=a.fullText; x.target="_blank"; x.rel="noopener"; lk.appendChild(x); }
+  else if(a.doi){ const x=el("a",null,"DOI"); x.href=`https://doi.org/${a.doi}`; x.target="_blank"; x.rel="noopener"; lk.appendChild(x); }
+
+  const cp = el("button",null,"Copy citation");
+  cp.onclick = ()=>{
+    const cite = `${a.authorStr||""} ${a.title}. ${a.journal}. ${a.displayDate}.${a.pmid?` PMID: ${a.pmid}.`:""}${a.doi?` doi:${a.doi}`:""}`.trim();
+    navigator.clipboard.writeText(cite).then(()=>{ cp.textContent="Copied"; cp.classList.add("copied"); setTimeout(()=>{cp.textContent="Copy citation";cp.classList.remove("copied");},1400); });
+  };
+  lk.appendChild(cp);
+  art.appendChild(lk);
+  return art;
+}
+
+function renderSkeletons(){
+  main.innerHTML="";
+  const head=el("div","meta-line"); head.innerHTML=`<span><span class="spinner"></span>Searching the literature…</span>`;
+  main.appendChild(head);
+  for(let i=0;i<4;i++){
+    const s=el("div","skel");
+    s.innerHTML=`<div class="l" style="width:30%"></div><div class="l" style="width:88%;height:16px"></div><div class="l" style="width:55%"></div><div class="l" style="width:100%"></div><div class="l" style="width:96%"></div><div class="l" style="width:70%"></div>`;
+    main.appendChild(s);
+  }
+}
+function renderEmpty(){
+  main.innerHTML=`<div class="state"><div class="big">No articles in this window</div><div>Try widening the time window, turning off the journal filter, or broadening your search terms.</div></div>`;
+}
+function renderError(msg){
+  main.innerHTML=`<div class="state err"><div class="big">Couldn't load results</div><div>${msg||"Network error"}.<br>If you're viewing this inside a preview pane, try the downloaded file in a normal browser tab — some embedded previews block outside requests.</div></div>`;
+}
+</script>
+</body>
+</html>
